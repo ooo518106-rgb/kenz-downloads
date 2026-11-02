@@ -1,0 +1,35 @@
+name: نشر مثبت كنز العام
+on:
+  workflow_dispatch:
+    inputs:
+      download_url:
+        description: Installer-only signed GitHub asset URL
+        required: true
+        type: string
+      version:
+        description: Release tag
+        required: true
+        default: desktop-v1.2.1
+        type: string
+      sha256:
+        description: SHA-256 from the private build
+        required: true
+        type: string
+permissions:
+  contents: write
+concurrency:
+  group: installer-${{ inputs.version }}
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Verify and publish installer only
+        run: node tools/publish.cjs
+        env:
+          GH_TOKEN: ${{ github.token }}
